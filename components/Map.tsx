@@ -144,32 +144,32 @@ export default function Map() {
   }
 
   return (
-    <div className="flex h-screen">
-      <div ref={mapContainer} className="flex-1" />
+    <div className="flex flex-col md:flex-row h-screen">
+      <div ref={mapContainer} className="flex-1 min-h-[50vh] md:min-h-0" />
 
-      <div className="w-80 bg-white shadow-lg p-6 overflow-y-auto flex flex-col gap-4">
+      <div className="w-full md:w-80 bg-white shadow-lg p-4 md:p-6 overflow-y-auto flex flex-col gap-4 max-h-[50vh] md:max-h-none">
         <h1 className="text-xl font-bold text-gray-800">NZ Parcel Explorer</h1>
 
         {/* Search */}
-        <div className="flex flex-col gap-2">
+        <div className="flex gap-2 md:flex-col">
           <input
             type="text"
             placeholder="Search address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             onClick={handleSearch}
             disabled={searching}
-            className="bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg px-3 py-2 disabled:opacity-50"
+            className="bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg px-3 py-2 disabled:opacity-50 whitespace-nowrap"
           >
             {searching ? 'Searching...' : 'Search'}
           </button>
         </div>
 
-        <p className="text-sm text-gray-500">Or click anywhere on the map to view parcel information.</p>
+        <p className="text-sm text-gray-500">Or tap anywhere on the map to view parcel information.</p>
 
         {loading && <div className="text-blue-500 text-sm">Loading parcel data...</div>}
         {error && <div className="text-red-500 text-sm">{error}</div>}
