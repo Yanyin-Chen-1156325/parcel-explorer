@@ -15,6 +15,7 @@ interface ParcelInfo {
 export default function Map() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
+  const searchMarker = useRef<maplibregl.Marker | null>(null)
   const [parcelInfo, setParcelInfo] = useState<ParcelInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +44,8 @@ export default function Map() {
 
     map.current.on('click', async (e) => {
       const { lng, lat } = e.lngLat
+      searchMarker.current?.remove()
+      searchMarker.current = null
       setLoading(true)
       setError(null)
       setParcelInfo(null)
@@ -93,6 +96,7 @@ export default function Map() {
     if (!searchQuery.trim() || !map.current) return
     setSearching(true)
     setError(null)
+    setParcelInfo(null)
 
     try {
       const apiKey = process.env.NEXT_PUBLIC_LINZ_API_KEY
@@ -102,7 +106,15 @@ export default function Map() {
       const res = await fetch(url)
       const data = await res.json()
 
-      const feature = data.features?.[0]
+      let feature = data.features?.[0]
+
+      if (!feature) {
+        const placeUrl = `${process.env.NEXT_PUBLIC_LINZ_ADDRESS_URL};key=${apiKey}/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=layer-1681&cql_filter=name+ILIKE+%27%25${encoded}%25%27&count=1&outputFormat=application/json`
+        const placeRes = await fetch(placeUrl)
+        const placeData = await placeRes.json()
+        feature = placeData.features?.[0]
+      }
+
       if (!feature) {
         setError('Address not found. Try a more specific address.')
         return
@@ -113,6 +125,15 @@ export default function Map() {
         center: [coords[0], coords[1]],
         zoom: 17,
         duration: 1500,
+      })
+
+      searchMarker.current?.remove()
+      searchMarker.current = new maplibregl.Marker()
+        .setLngLat([coords[0], coords[1]])
+        .addTo(map.current)
+      searchMarker.current.getElement().addEventListener('click', () => {
+        searchMarker.current?.remove()
+        searchMarker.current = null
       })
     } catch (err) {
       setError('Failed to search address.')
